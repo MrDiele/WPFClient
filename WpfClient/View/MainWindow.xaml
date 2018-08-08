@@ -1,0 +1,53 @@
+﻿<Window x:Class="WpfClient.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfClient.ViewModel"
+        mc:Ignorable="d"
+        Title="TestProject" Height="450" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition />
+            <RowDefinition Height="30"/>
+        </Grid.RowDefinitions>
+        <Menu x:Name="menu" Grid.Row="0">
+            <MenuItem Header="Файл">
+                <MenuItem Header="О программе:" >
+                    <MenuItem Header="Назначение" Command="{Binding GetAppointmentCommand}"></MenuItem>
+                    <MenuItem Header="Автор" Command="{Binding GetAuthorCommand}"></MenuItem>
+                </MenuItem>                 
+                <Separator />
+                <MenuItem Header="Выход" Click="MenuItem_Click" ></MenuItem>     
+            </MenuItem>
+            <MenuItem Header="Возможные действия">
+                <MenuItem Header="Добавить" Command="{Binding AddPersonWindow}"></MenuItem>
+                <MenuItem Header="Редактировать" Command="{Binding EditPersonWindow}"></MenuItem>
+                <MenuItem Header="Удалить" Command="{Binding DeleteCommand}"></MenuItem> 
+            </MenuItem>
+        </Menu>
+
+        <TextBlock Text="Список пользователей:" TextWrapping="NoWrap" Grid.Row="1" FontSize="15"/>
+
+        <DataGrid x:Name="MainGrid" Grid.Row="2" 
+                          ItemsSource="{Binding PersonsList}"
+                          SelectedItem="{Binding SelectedPerson}" 
+                          AutoGenerateColumns="False"
+                          DataContextChanged="OnMainGridDataContextChanged"
+                          DockPanel.Dock="Top">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="id" Width="40" Binding="{Binding Idperson}" IsReadOnly="True" />
+                <DataGridTextColumn Header="Ф.И.О" Width="*" Binding="{Binding Name}" IsReadOnly="True" />
+                <DataGridTextColumn Header="Дата рождения" Width="150" Binding="{Binding Dateofbirth, StringFormat=dd.MM.yyyy}" IsReadOnly="True" />
+                <DataGridTextColumn Header="Город проживания" Width="200" Binding="{Binding City}" IsReadOnly="True" />
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <StackPanel Grid.Row="3"  DockPanel.Dock="Bottom" Orientation="Horizontal">
+            <TextBlock Text="Колличество записей: " TextWrapping="NoWrap"/>
+            <TextBlock Text="{Binding PersonCount}" TextWrapping="Wrap"/>
+        </StackPanel>
+    </Grid>
+</Window>
