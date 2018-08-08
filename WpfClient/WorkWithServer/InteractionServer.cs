@@ -24,7 +24,7 @@ namespace WpfClient.WorkWithServer
                 string _postfixRequest = (postfixRequest == null) ? null : "/" + postfixRequest;
                 string _param = (param == null) ? null : "/" + param;
                 HttpWebRequest webRequest = (HttpWebRequest)WebRequest.Create($"http://localhost:6580/api/Persons" + _postfixRequest + _param);
-                webRequest.ContentType = "application/json-rpc";
+                webRequest.ContentType = "application/json";
                 webRequest.Method = method;
                 return webRequest;
             }
@@ -105,14 +105,10 @@ namespace WpfClient.WorkWithServer
             try
             {
                 HttpWebRequest webRequest = ConWebRequest("POST", null, null);
-                JObject joe = new JObject();
-                joe.Add(new JProperty("Person", new JObject(                                      //TODO проверить правильность JSON     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                                                new JProperty("idperson", person.Idperson),
-                                                new JProperty("name", person.Name),
-                                                new JProperty("dateofbirth", person.Dateofbirth),
-                                                new JProperty("city", person.City)
-                                            )
-                )); 
+                JObject joe = new JObject(new JProperty("idperson", person.Idperson),
+                          new JProperty("name", person.Name),
+                          new JProperty("dateofbirth", person.Dateofbirth),
+                          new JProperty("city", person.City));
                 string s = JsonConvert.SerializeObject(joe);
                 byte[] byteArray = Encoding.UTF8.GetBytes(s);
                 webRequest.ContentLength = byteArray.Length;
@@ -140,14 +136,10 @@ namespace WpfClient.WorkWithServer
             try
             {
                 HttpWebRequest webRequest = ConWebRequest("PUT", null,null);
-                JObject joe = new JObject();
-                joe.Add(new JProperty("Person", new JObject(                                      //TODO проверить правильность JSON     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                                                new JProperty("idperson", person.Idperson),
-                                                new JProperty("name", person.Name),
-                                                new JProperty("dateofbirth", person.Dateofbirth),
-                                                new JProperty("city", person.City)
-                                            )
-                ));
+                JObject joe = new JObject(new JProperty("idperson", person.Idperson),
+                                          new JProperty("name", person.Name),
+                                          new JProperty("dateofbirth", person.Dateofbirth),
+                                          new JProperty("city", person.City));    
                 string s = JsonConvert.SerializeObject(joe);
                 byte[] byteArray = Encoding.UTF8.GetBytes(s);
                 webRequest.ContentLength = byteArray.Length;
