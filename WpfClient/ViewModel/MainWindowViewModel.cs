@@ -14,22 +14,29 @@ namespace WpfClient.ViewModel
 
         #region Fields
 
+        private string _filterName;
+        private string _filterTown;
+        private DateTime _filterDate;
+        
         private Person _SelectedPerson;
         private ObservableCollection<Person> _Persons;
         private int _PersonCount;
+
+        private ICommand _FilterPerson;
+        private ICommand _ResetFilterPerson;
         private ICommand _AddPersonWindow;
         private ICommand _EditPersonWindow;
         private ICommand _getAppointmentCommand;
         private ICommand _getAuthorCommand;
         private ICommand _deleteCommand;
-        
+
         #endregion
 
         #region Constructor
 
         public MainWindowViewModel()
         {
-            this.GetData();
+            this.GetData(); 
         }
 
         public MainWindowViewModel(Person person)
@@ -42,6 +49,45 @@ namespace WpfClient.ViewModel
         #region Set/Get fields
 
         /// <summary>
+        /// Выбранная Ф.И.О. для фильтра.
+        /// </summary>
+        public string FilterName
+        {
+            get { return _filterName; }
+            set
+            {
+                _filterName = value;
+                base.RaisePropertyChangedEvent("FilterName");
+            }
+        }
+
+        /// <summary>
+        /// Выбранный город для фильтра.
+        /// </summary>
+        public string FilterTown
+        {
+            get { return _filterTown; }
+            set
+            {
+                _filterTown = value;
+                base.RaisePropertyChangedEvent("FilterTown");
+            }
+        }
+
+        /// <summary>
+        /// Выбранная дата рождения для фильтра.
+        /// </summary>
+        public DateTime FilterDate
+        {
+            get { return _filterDate; }
+            set
+            {
+                _filterDate = value;
+                base.RaisePropertyChangedEvent("FilterDate");
+            }
+        }
+
+        /// <summary>
         /// Список людей.
         /// </summary>
         public ObservableCollection<Person> PersonsList
@@ -51,7 +97,7 @@ namespace WpfClient.ViewModel
             set
             {
                 _Persons = value;
-                base.RaisePropertyChangedEvent("PersonsList");
+                base.RaisePropertyChangedEvent("PersonsList");     
             }
         }
 
@@ -86,6 +132,36 @@ namespace WpfClient.ViewModel
         #endregion
 
         #region Command
+
+        /// <summary>
+        /// Команда применения фильтра.
+        /// </summary>
+        public ICommand ApllyFiltersCommand
+        {
+            get
+            {
+                if (_FilterPerson == null)
+                {
+                    _FilterPerson = new ApllyFiltersCommand(this);
+                }
+                return _FilterPerson;
+            }
+        }
+          
+        /// <summary>
+        /// Команда сброса фильтра.
+        /// </summary>
+        public ICommand ResetFiltersCommand
+        {
+            get
+            {
+                if (_ResetFilterPerson == null)
+                {
+                    _ResetFilterPerson = new ResetFiltersCommand(this);
+                }
+                return _ResetFilterPerson;
+            }
+        }
 
         /// <summary>
         /// Команда на добавление нового пользователя.
@@ -190,15 +266,16 @@ namespace WpfClient.ViewModel
         /// <summary>
         /// Событие обновления при изменении списка людей .
         /// </summary>
-        void OnGroceryListChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        private void OnGroceryListChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             this._PersonCount = this.PersonsList.Count;
         }
 
+
         /// <summary>
         /// Метод для заполнения списка пользователей.
         /// </summary>
-        private void GetData()
+        public void GetData()
         {
             _Persons = new ObservableCollection<Person>();
 
@@ -214,6 +291,29 @@ namespace WpfClient.ViewModel
             base.RaisePropertyChangedEvent("PersonsList");
         }
 
+        /// <summary>
+        /// Метод заполнения списка пользователей с учётом фильтра.
+        /// </summary>
+        public void GetFilterData()
+        {
+            if (FilterName != null || FilterDate.Date != Convert.ToDateTime("01.01.0001 0:00:00") || FilterTown != null)    //поставить вместо дата == нул стандартную дату
+            {
+                _Persons.CollectionChanged += OnGroceryListChanged;
+
+                InteractionServer response = new InteractionServer();
+                List<Person> fp = response.FilterPerson(FilterName, FilterDate, FilterTown);
+                PersonsList.Clear();
+                for (int i = 0; i < fp.Count; i++)
+                {
+                    PersonsList.Add(new Person { Idperson = fp[i].Idperson, Name = fp[i].Name, Dateofbirth = Convert.ToDateTime(fp[i].Dateofbirth), City = fp[i].City });
+                }
+                base.RaisePropertyChangedEvent("PersonsList");
+            }
+            else
+            {
+                MessageBox.Show("Выберите пользователя для удаления", "Сообщение", MessageBoxButton.OK);
+            }        
+        }
         #endregion
     }
 
@@ -255,6 +355,8 @@ namespace WpfClient.ViewModel
             var displayRootRegistry = (Application.Current as App).displayRootRegistry;
 
             var personWindowViewModel = new PersonWindowViewModel();
+            //personWindowViewModel.update += _mainWindowVeiwModel.GetData();                               //TODO лажа, прочитать про экшаны
+
             await displayRootRegistry.ShowModalPresentation(personWindowViewModel);
         }
     }
@@ -301,7 +403,6 @@ namespace WpfClient.ViewModel
         }
         public override void Execute(object parameter)
         {
-            var displayRootRegistry = (Application.Current as App).displayRootRegistry;
             MainWindowViewModel main = new MainWindowViewModel(_mainWindowVeiwModel.SelectedPerson);
             main.DeletePerson();
         }
@@ -321,8 +422,6 @@ namespace WpfClient.ViewModel
         }
         public override void Execute(object parameter)
         {
-            var displayRootRegistry = (Application.Current as App).displayRootRegistry;
-
             MessageBox.Show("Этот тестовый проект написан с целью технологии WPF и паттерна для работы MVVM для работы с ним ", "Информация", MessageBoxButton.OK);
         }
     }
@@ -341,9 +440,43 @@ namespace WpfClient.ViewModel
         }
         public override void Execute(object parameter)
         {
-            var displayRootRegistry = (Application.Current as App).displayRootRegistry;
-
             MessageBox.Show("А.В. Печенюк", "Информация", MessageBoxButton.OK);
+        }
+    }
+
+    /// <summary>
+    /// Класс для обработки команды получения информации о разработчике.
+    /// </summary>
+    class ApllyFiltersCommand : MainWindowMyCommand               //Возможно надо вынести в Utility
+    {
+        public ApllyFiltersCommand(MainWindowViewModel mainWindowVeiwModel) : base(mainWindowVeiwModel)
+        {
+        }
+        public override bool CanExecute(object parameter)
+        {
+            return true;
+        }
+        public override void Execute(object parameter)
+        {
+            _mainWindowVeiwModel.GetFilterData();
+        }
+    }
+
+    /// <summary>
+    /// Класс для обработки команды получения информации о разработчике.
+    /// </summary>
+    class ResetFiltersCommand : MainWindowMyCommand               //Возможно надо вынести в Utility
+    {
+        public ResetFiltersCommand(MainWindowViewModel mainWindowVeiwModel) : base(mainWindowVeiwModel)
+        {
+        }
+        public override bool CanExecute(object parameter)
+        {
+            return true;
+        }
+        public override void Execute(object parameter)
+        {
+            _mainWindowVeiwModel.GetData();
         }
     }
 

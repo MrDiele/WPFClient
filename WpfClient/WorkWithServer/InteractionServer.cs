@@ -3,10 +3,8 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
 using WpfClient.Model;
 
 namespace WpfClient.WorkWithServer
@@ -67,7 +65,7 @@ namespace WpfClient.WorkWithServer
         }
 
         /// <summary>
-        /// Получает от сервера список пользователей.
+        /// Получает от сервера список городов.
         /// </summary>
         public List<City> GetCitiesList()
         {
@@ -100,7 +98,7 @@ namespace WpfClient.WorkWithServer
         /// <summary>
         /// Запрос на добавление нового пользователя.
         /// </summary>
-        public void AddNewPerson(Person person)
+        public void AddNewPerson(Person person, Action action)
         {
             try
             {
@@ -120,6 +118,7 @@ namespace WpfClient.WorkWithServer
                 if (((HttpWebResponse)webResponse).StatusCode == HttpStatusCode.OK)
                 {
                     webResponse.Close();
+                    action?.Invoke();
                 }
             }
             catch (Exception ex)
@@ -175,6 +174,54 @@ namespace WpfClient.WorkWithServer
             }
             catch (Exception ex)
             {
+                //TODO Логи
+            }
+        }
+
+        /// <summary>
+        /// Получает от сервера список пользователей с учётом фильтра.
+        /// </summary>
+        public List<Person> FilterPerson(string filterName, DateTime filterDate, string filterTown)
+        {
+            try
+            {
+                HttpWebRequest webRequest = ConWebRequest("POSt", "Filter", null);
+
+                List<JProperty> properties = new List<JProperty>();
+                if (filterName != null)
+                    properties.Add(new JProperty("name", filterName));
+                if(filterDate.ToString() != "01.01.0001 0:00:00")
+                    properties.Add(new JProperty("dateofbirth", filterDate));
+                if(filterTown != null)
+                    properties.Add(new JProperty("city", filterTown));
+                JObject joe = new JObject(properties);
+
+                string s = JsonConvert.SerializeObject(joe);
+                byte[] byteArray = Encoding.UTF8.GetBytes(s);
+                webRequest.ContentLength = byteArray.Length;
+                Stream dataStream = webRequest.GetRequestStream();
+                dataStream.Write(byteArray, 0, byteArray.Length);
+                dataStream.Close();
+
+                WebResponse webResponse = webRequest.GetResponse();
+                if (((HttpWebResponse)webResponse).StatusCode == HttpStatusCode.OK)
+                {
+                    Stream dataStreamResponse = webResponse.GetResponseStream();
+                    StreamReader reader = new StreamReader(dataStreamResponse);
+                    string responseFromServer = reader.ReadToEnd();
+                    var resp = JsonConvert.DeserializeObject<List<Person>>(responseFromServer);
+                    reader.Close();
+                    webResponse.Close();
+                    return resp;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                return null;
                 //TODO Логи
             }
         }

@@ -141,6 +141,9 @@ namespace WpfClient.ViewModel
 
         #endregion
 
+        public Action update
+        { get; set; }
+
         #region Method logic
 
         /// <summary>
@@ -166,7 +169,7 @@ namespace WpfClient.ViewModel
         public void Add(Person person)
         {
             response = new InteractionServer();
-            response.AddNewPerson(person);
+         //   response.AddNewPerson(person);
         }
 
         /// <summary>
