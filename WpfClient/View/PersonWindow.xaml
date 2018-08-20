@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfClient.ViewModel"
         mc:Ignorable="d"
-        Title="Информация о человеке" Height="230" Width="450" MaxWidth="450" MaxHeight="230">
+        Title="Информация о человеке" Height="260" Width="450" MaxWidth="450" MaxHeight="260">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="53*" />
