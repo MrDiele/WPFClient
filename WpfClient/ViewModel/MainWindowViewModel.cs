@@ -311,7 +311,7 @@ namespace WpfClient.ViewModel
             }
             else
             {
-                MessageBox.Show("Выберите пользователя для удаления", "Сообщение", MessageBoxButton.OK);
+                MessageBox.Show("Выберите поля для фильтрации", "Сообщение", MessageBoxButton.OK);
             }        
         }
         #endregion
