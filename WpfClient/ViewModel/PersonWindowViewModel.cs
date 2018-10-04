@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Comands;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -18,13 +19,13 @@ namespace WpfClient.ViewModel
     {
         #region Fields
 
-        private Person _editPerson;
-        private ObservableCollection<City> _Cities;
-        private City _selectedCity;
-        private bool _edit;
+        private Person editPerson;
+        private ObservableCollection<City> citiesList;
+        private City selectedCity;
+        private bool edit;
         private InteractionServer response;
-        private ICommand _okCommand;
-        private ICommand _closeCommand;
+        private ICommand okCommand;
+        private ICommand closeCommand;
 
         #endregion
 
@@ -39,10 +40,10 @@ namespace WpfClient.ViewModel
 
         public PersonWindowViewModel(Person person)
         {
-            _selectedCity = new City();
+            selectedCity = new City();
             EditPerson = person;
             this.GetData();
-            _selectedCity.Town = EditPerson.City;
+            selectedCity.Town = EditPerson.City;
             FEdit = true;
         }
 
@@ -55,11 +56,11 @@ namespace WpfClient.ViewModel
         /// </summary>
         public bool FEdit
         {
-            get { return _edit; }
+            get { return edit; }
 
             set
             {
-                _edit = value;
+                edit = value;
             }
         }
 
@@ -68,11 +69,11 @@ namespace WpfClient.ViewModel
         /// </summary>
         public ObservableCollection<City> CitiesList
         {
-            get { return _Cities; }
+            get { return citiesList; }
 
             set
             {
-                _Cities = value;
+                citiesList = value;
                 base.RaisePropertyChangedEvent("CitiesList");
             }
         }
@@ -82,11 +83,11 @@ namespace WpfClient.ViewModel
         /// </summary>
         public City SelectedCity
         {
-            get { return _selectedCity; }
+            get { return selectedCity; }
 
             set
             {
-                _selectedCity = value;
+                selectedCity = value;
                 base.RaisePropertyChangedEvent("SelectedCity");
             }
         }
@@ -96,11 +97,11 @@ namespace WpfClient.ViewModel
         /// </summary>
         public Person EditPerson
         {
-            get { return _editPerson; }
+            get { return editPerson; }
 
             set
             {
-                _editPerson = value;
+                editPerson = value;
                 base.RaisePropertyChangedEvent("EditPerson");
             }
         }
@@ -116,11 +117,30 @@ namespace WpfClient.ViewModel
         {
             get
             {
-                if (_okCommand == null)
-                {
-                    _okCommand = new AddPersonCommand(this);
-                }
-                return _okCommand;
+                return okCommand ?? (okCommand = new RelayCommand((o) => {
+                    var displayRootRegistry = (Application.Current as App).displayRootRegistry;
+
+                    Person person = new Person();
+                    person.Idperson = EditPerson.Idperson;
+                    person.Name = EditPerson.Name;
+                    person.Dateofbirth = EditPerson.Dateofbirth;
+                    person.City = SelectedCity.Town;
+
+                    if (FEdit == false)
+                    {
+                        Add(person);
+                        PersonWindow personWindow = Application.Current.Windows.OfType<PersonWindow>().FirstOrDefault();
+                        if (personWindow != null)
+                            personWindow.Close();
+                    }
+                    else
+                    {
+                        Edit(person);
+                        PersonWindow personWindow = Application.Current.Windows.OfType<PersonWindow>().FirstOrDefault();
+                        if (personWindow != null)
+                            personWindow.Close();
+                    }
+                }));
             }
         }
 
@@ -131,18 +151,16 @@ namespace WpfClient.ViewModel
         {
             get
             {
-                if (_closeCommand == null)
-                {
-                    _closeCommand = new ClosePersonCommand(this);
-                }
-                return _closeCommand;
+                return closeCommand ?? (closeCommand = new RelayCommand((o) => {
+                    var displayRootRegistry = (Application.Current as App).displayRootRegistry;
+                    PersonWindow personWindow = Application.Current.Windows.OfType<PersonWindow>().FirstOrDefault();
+                    if (personWindow != null)
+                        personWindow.Close();
+                }));
             }
         }
 
         #endregion
-
-        public Action update
-        { get; set; }
 
         #region Method logic
 
@@ -151,7 +169,7 @@ namespace WpfClient.ViewModel
         /// </summary>
         private void GetData()
         {
-            _Cities = new ObservableCollection<City>();
+            citiesList = new ObservableCollection<City>();
 
             response = new InteractionServer();
             List<City> lp = response.GetCitiesList();
@@ -169,7 +187,7 @@ namespace WpfClient.ViewModel
         public void Add(Person person)
         {
             response = new InteractionServer();
-         //   response.AddNewPerson(person);
+            response.AddNewPerson(person);
         }
 
         /// <summary>
@@ -183,87 +201,4 @@ namespace WpfClient.ViewModel
 
         #endregion
     }
-
-    #region Class for work with command
-
-    /// <summary>
-    /// Абстрактный класс для обработки принятых команд из PersonWindow.
-    /// </summary>
-    abstract class PersonWindowMyCommand : ICommand                  //Возможно надо вынести в Utility
-    {
-        protected PersonWindowViewModel _personWindowViewModel;
-
-        public PersonWindowMyCommand(PersonWindowViewModel personWindowViewModel)
-        {
-            _personWindowViewModel = personWindowViewModel;
-        }
-
-        public event EventHandler CanExecuteChanged;
-
-        public abstract bool CanExecute(object parameter);
-
-        public abstract void Execute(object parameter);
-    }
-
-    /// <summary>
-    /// Класс для обработки команды добавления нового пользователя.
-    /// </summary>
-    class AddPersonCommand : PersonWindowMyCommand                  //Возможно надо вынести в Utility
-    {
-        public AddPersonCommand(PersonWindowViewModel personWindowViewModel) : base(personWindowViewModel)
-        {
-        }
-        public override bool CanExecute(object parameter)
-        {
-            return true;
-        }
-        public override async void Execute(object parameter)
-        {
-            var displayRootRegistry = (Application.Current as App).displayRootRegistry;
-
-            Person person = new Person();
-            person.Idperson = _personWindowViewModel.EditPerson.Idperson;
-            person.Name = _personWindowViewModel.EditPerson.Name;
-            person.Dateofbirth = _personWindowViewModel.EditPerson.Dateofbirth;
-            person.City = _personWindowViewModel.SelectedCity.Town;
-
-            if (_personWindowViewModel.FEdit == false)
-            {
-                _personWindowViewModel.Add(person);
-                PersonWindow personWindow = Application.Current.Windows.OfType<PersonWindow>().FirstOrDefault();
-                if (personWindow != null)
-                    personWindow.Close();
-            }
-            else
-            {
-                _personWindowViewModel.Edit(person);
-                PersonWindow personWindow = Application.Current.Windows.OfType<PersonWindow>().FirstOrDefault();
-                if (personWindow != null)
-                    personWindow.Close();
-            }
-        }
-    }
-
-    /// <summary>
-    /// Класс для обработки команды закрытия окна PersonWindow.
-    /// </summary>
-    class ClosePersonCommand : PersonWindowMyCommand                  //Возможно надо вынести в Utility
-    {
-        public ClosePersonCommand(PersonWindowViewModel personWindowViewModel) : base(personWindowViewModel)
-        {
-        }
-        public override bool CanExecute(object parameter)
-        {
-            return true;
-        }
-        public override async void Execute(object parameter)
-        {
-            var displayRootRegistry = (Application.Current as App).displayRootRegistry;
-            PersonWindow personWindow = Application.Current.Windows.OfType<PersonWindow>().FirstOrDefault();
-            if (personWindow != null)
-                personWindow.Close();
-        }
-    }
-
-    #endregion
 }

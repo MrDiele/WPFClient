@@ -93,6 +93,7 @@
     </Compile>
     <Compile Include="Utility\ViewModelBase.cs" />
     <Compile Include="ViewModel\MainWindowViewModel.cs" />
+    <Compile Include="View\RelayCommand.cs" />
     <Compile Include="WorkWithServer\InteractionServer.cs" />
     <Page Include="Theme\Brushes.xaml">
       <SubType>Designer</SubType>

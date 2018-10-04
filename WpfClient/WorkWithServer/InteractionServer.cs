@@ -98,7 +98,7 @@ namespace WpfClient.WorkWithServer
         /// <summary>
         /// Запрос на добавление нового пользователя.
         /// </summary>
-        public void AddNewPerson(Person person, Action action)
+        public void AddNewPerson(Person person)
         {
             try
             {
@@ -118,7 +118,6 @@ namespace WpfClient.WorkWithServer
                 if (((HttpWebResponse)webResponse).StatusCode == HttpStatusCode.OK)
                 {
                     webResponse.Close();
-                    action?.Invoke();
                 }
             }
             catch (Exception ex)

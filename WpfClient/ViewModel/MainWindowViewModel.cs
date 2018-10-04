@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Comands;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows;
@@ -14,21 +15,21 @@ namespace WpfClient.ViewModel
 
         #region Fields
 
-        private string _filterName;
-        private string _filterTown;
-        private DateTime _filterDate;
-        
-        private Person _SelectedPerson;
-        private ObservableCollection<Person> _Persons;
-        private int _PersonCount;
+        private string filterName;
+        private string filterTown;
+        private DateTime filterDate;
 
-        private ICommand _FilterPerson;
-        private ICommand _ResetFilterPerson;
-        private ICommand _AddPersonWindow;
-        private ICommand _EditPersonWindow;
-        private ICommand _getAppointmentCommand;
-        private ICommand _getAuthorCommand;
-        private ICommand _deleteCommand;
+        private Person selectedPerson;
+        private ObservableCollection<Person> personsList;
+        private int personCount;
+
+        private ICommand applyFiltersCommand;
+        private ICommand resetFiltersCommand;
+        private ICommand openWindowAddPersonCommand;
+        private ICommand openWindowEditPersonCommand;
+        private ICommand getAppointmentCommand;
+        private ICommand getInformationAboutAuthorCommand;
+        private ICommand deletePersonCommand;
 
         #endregion
 
@@ -36,7 +37,7 @@ namespace WpfClient.ViewModel
 
         public MainWindowViewModel()
         {
-            this.GetData(); 
+            this.GetData();
         }
 
         public MainWindowViewModel(Person person)
@@ -53,10 +54,10 @@ namespace WpfClient.ViewModel
         /// </summary>
         public string FilterName
         {
-            get { return _filterName; }
+            get { return filterName; }
             set
             {
-                _filterName = value;
+                filterName = value;
                 base.RaisePropertyChangedEvent("FilterName");
             }
         }
@@ -66,10 +67,10 @@ namespace WpfClient.ViewModel
         /// </summary>
         public string FilterTown
         {
-            get { return _filterTown; }
+            get { return filterTown; }
             set
             {
-                _filterTown = value;
+                filterTown = value;
                 base.RaisePropertyChangedEvent("FilterTown");
             }
         }
@@ -79,10 +80,10 @@ namespace WpfClient.ViewModel
         /// </summary>
         public DateTime FilterDate
         {
-            get { return _filterDate; }
+            get { return filterDate; }
             set
             {
-                _filterDate = value;
+                filterDate = value;
                 base.RaisePropertyChangedEvent("FilterDate");
             }
         }
@@ -92,12 +93,12 @@ namespace WpfClient.ViewModel
         /// </summary>
         public ObservableCollection<Person> PersonsList
         {
-            get { return _Persons; }
+            get { return personsList; }
 
             set
             {
-                _Persons = value;
-                base.RaisePropertyChangedEvent("PersonsList");     
+                personsList = value;
+                base.RaisePropertyChangedEvent("PersonsList");
             }
         }
 
@@ -106,11 +107,11 @@ namespace WpfClient.ViewModel
         /// </summary>
         public Person SelectedPerson
         {
-            get { return _SelectedPerson; }
+            get { return selectedPerson; }
 
             set
             {
-                _SelectedPerson = value;
+                selectedPerson = value;
                 base.RaisePropertyChangedEvent("SelectedPerson");
             }
         }
@@ -120,11 +121,11 @@ namespace WpfClient.ViewModel
         /// </summary>
         public int PersonCount
         {
-            get { return _PersonCount; }
+            get { return personCount; }
 
             set
             {
-                _PersonCount = value;
+                personCount = value;
                 base.RaisePropertyChangedEvent("PersonCount");
             }
         }
@@ -140,71 +141,76 @@ namespace WpfClient.ViewModel
         {
             get
             {
-                if (_FilterPerson == null)
-                {
-                    _FilterPerson = new ApllyFiltersCommand(this);
-                }
-                return _FilterPerson;
+                return applyFiltersCommand ?? (applyFiltersCommand = new RelayCommand((o) => { GetFilterData(); }));
             }
         }
-          
+
         /// <summary>
         /// Команда сброса фильтра.
         /// </summary>
-        public ICommand ResetFiltersCommand
-        {
+        public ICommand ResetFiltersCommand                                                                          // проперти как переменная
+        {                                                                                                                                      // с маленькой буквы поправить
             get
             {
-                if (_ResetFilterPerson == null)
-                {
-                    _ResetFilterPerson = new ResetFiltersCommand(this);
-                }
-                return _ResetFilterPerson;
+                return resetFiltersCommand ?? (resetFiltersCommand = new RelayCommand((o) => { GetData(); }));
             }
         }
 
         /// <summary>
         /// Команда на добавление нового пользователя.
         /// </summary>
-        public ICommand AddPersonWindow
+        public ICommand OpenWindowAddPersonCommand
         {
             get
             {
-                if (_AddPersonWindow == null)
+                return openWindowAddPersonCommand ?? (openWindowAddPersonCommand = new RelayCommand(async (o) =>
                 {
-                    _AddPersonWindow = new AddPersonWindowCommand(this);
-                }
-                return _AddPersonWindow;
+                    var displayRootRegistry = (Application.Current as App).displayRootRegistry;
+
+                    var personWindowViewModel = new PersonWindowViewModel();
+
+                    await displayRootRegistry.ShowModalPresentation(personWindowViewModel);
+                    GetData();
+                }));
             }
         }
 
         /// <summary>
         /// Команда на редактирование пользователя.
         /// </summary>
-        public ICommand EditPersonWindow
+        public ICommand OpenWindowEditPersonCommand
         {
             get
             {
-                if (_EditPersonWindow == null)
+                return openWindowEditPersonCommand ?? (openWindowEditPersonCommand = new RelayCommand(async (o) =>
                 {
-                    _EditPersonWindow = new EditPersonWindowCommand(this);
-                }
-                return _EditPersonWindow;
+                    var displayRootRegistry = (Application.Current as App).displayRootRegistry;
+
+                    if (SelectedPerson != null)
+                    {
+                        var personWindowViewModel = new PersonWindowViewModel(SelectedPerson);
+                        await displayRootRegistry.ShowModalPresentation(personWindowViewModel);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Не выбран ни один пользователь из списка", "Сообщение", MessageBoxButton.OK);
+                    }
+                }));
             }
         }
 
         /// <summary>
         /// Команда на удаление.
         /// </summary>
-        public ICommand DeleteCommand
+        public ICommand DeletePersonCommand
         {
             get
             {
-                if (_deleteCommand == null)
+                return deletePersonCommand ?? (deletePersonCommand = new RelayCommand((o) =>
                 {
-                    _deleteCommand = new DeleteCommand(this);
-                }
-                return _deleteCommand;
+                    MainWindowViewModel main = new MainWindowViewModel(SelectedPerson);
+                    main.DeletePerson();
+                }));
             }
         }
 
@@ -215,26 +221,18 @@ namespace WpfClient.ViewModel
         {
             get
             {
-                if (_getAppointmentCommand == null)
-                {
-                    _getAppointmentCommand = new GetAppointmentCommand(this);
-                }
-                return _getAppointmentCommand;
+                return getAppointmentCommand ?? (getAppointmentCommand = new RelayCommand((o) => { MessageBox.Show("Этот тестовый проект написан с целью технологии WPF и паттерна для работы MVVM для работы с ним ", "Информация", MessageBoxButton.OK); }));
             }
         }
 
         /// <summary>
         /// Команда на получение информации об авторе.
         /// </summary>
-        public ICommand GetAuthorCommand
+        public ICommand GetInformationAboutAuthorCommand
         {
             get
             {
-                if (_getAuthorCommand == null)
-                {
-                    _getAuthorCommand = new GetAuthorCommand(this);
-                }
-                return _getAuthorCommand;
+                return getInformationAboutAuthorCommand ?? (getInformationAboutAuthorCommand = new RelayCommand((o) => { MessageBox.Show("А.В. Печенюк", "Информация", MessageBoxButton.OK); }));
             }
         }
 
@@ -249,7 +247,7 @@ namespace WpfClient.ViewModel
         {
             if (SelectedPerson != null)
             {
-                var dialogResult = MessageBox.Show("Вы действительно хотите удалить пользователя " + _SelectedPerson.Name + "?", "Сообщение", MessageBoxButton.YesNo);
+                var dialogResult = MessageBox.Show("Вы действительно хотите удалить пользователя " + selectedPerson.Name + "?", "Сообщение", MessageBoxButton.YesNo);
                 if (dialogResult == MessageBoxResult.Yes)
                 {
                     InteractionServer response = new InteractionServer();
@@ -268,7 +266,7 @@ namespace WpfClient.ViewModel
         /// </summary>
         private void OnGroceryListChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            this._PersonCount = this.PersonsList.Count;
+            this.personCount = this.PersonsList.Count;
         }
 
 
@@ -277,9 +275,9 @@ namespace WpfClient.ViewModel
         /// </summary>
         public void GetData()
         {
-            _Persons = new ObservableCollection<Person>();
+            personsList = new ObservableCollection<Person>();
 
-            _Persons.CollectionChanged += OnGroceryListChanged;
+            personsList.CollectionChanged += OnGroceryListChanged;
 
             InteractionServer response = new InteractionServer();
             List<Person> lp = response.GetPersonList();
@@ -298,7 +296,7 @@ namespace WpfClient.ViewModel
         {
             if (FilterName != null || FilterDate.Date != Convert.ToDateTime("01.01.0001 0:00:00") || FilterTown != null)    //поставить вместо дата == нул стандартную дату
             {
-                _Persons.CollectionChanged += OnGroceryListChanged;
+                personsList.CollectionChanged += OnGroceryListChanged;
 
                 InteractionServer response = new InteractionServer();
                 List<Person> fp = response.FilterPerson(FilterName, FilterDate, FilterTown);
@@ -312,173 +310,8 @@ namespace WpfClient.ViewModel
             else
             {
                 MessageBox.Show("Выберите поля для фильтрации", "Сообщение", MessageBoxButton.OK);
-            }        
+            }
         }
         #endregion
     }
-
-    #region Class for work with command
-
-    /// <summary>
-    /// Абстрактный класс для обработки принятых команд из MainWindow.
-    /// </summary>
-    abstract class MainWindowMyCommand : ICommand                  //Возможно надо вынести в Utility
-    {
-        protected MainWindowViewModel _mainWindowVeiwModel;
-
-        public MainWindowMyCommand(MainWindowViewModel mainWindowVeiwModel)
-        {
-            _mainWindowVeiwModel = mainWindowVeiwModel;
-        }
-
-        public event EventHandler CanExecuteChanged;
-
-        public abstract bool CanExecute(object parameter);
-
-        public abstract void Execute(object parameter);
-    }
-
-    /// <summary>
-    /// Класс для обработки команды добавления нового пользователя.
-    /// </summary>
-    class AddPersonWindowCommand : MainWindowMyCommand                  //Возможно надо вынести в Utility
-    {
-        public AddPersonWindowCommand(MainWindowViewModel mainWindowVeiwModel) : base(mainWindowVeiwModel)
-        {
-        }
-        public override bool CanExecute(object parameter)
-        {
-            return true;
-        }
-        public override async void Execute(object parameter)
-        {
-            var displayRootRegistry = (Application.Current as App).displayRootRegistry;
-
-            var personWindowViewModel = new PersonWindowViewModel();
-            //personWindowViewModel.update += _mainWindowVeiwModel.GetData();                               //TODO лажа, прочитать про экшаны
-
-            await displayRootRegistry.ShowModalPresentation(personWindowViewModel);
-        }
-    }
-
-    /// <summary>
-    /// Класс для обработки команды редактирования существующего пользователя.
-    /// </summary>
-    class EditPersonWindowCommand : MainWindowMyCommand                 //Возможно надо вынести в Utility
-    {
-        public EditPersonWindowCommand(MainWindowViewModel mainWindowVeiwModel) : base(mainWindowVeiwModel)
-        {
-        }
-        public override bool CanExecute(object parameter)
-        {
-            return true;
-        }
-        public override async void Execute(object parameter)
-        {
-            var displayRootRegistry = (Application.Current as App).displayRootRegistry;
-
-            if (_mainWindowVeiwModel.SelectedPerson != null)
-            {
-                var personWindowViewModel = new PersonWindowViewModel(_mainWindowVeiwModel.SelectedPerson);
-                await displayRootRegistry.ShowModalPresentation(personWindowViewModel);
-            }
-            else
-            {
-                MessageBox.Show("Не выбран ни один пользователь из списка", "Сообщение", MessageBoxButton.OK);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Класс для обработки команды удаления существующего пользователя.
-    /// </summary>
-    class DeleteCommand : MainWindowMyCommand               //Возможно надо вынести в Utility
-    {
-        public DeleteCommand(MainWindowViewModel mainWindowVeiwModel) : base(mainWindowVeiwModel)
-        {
-        }
-        public override bool CanExecute(object parameter)
-        {
-            return true;
-        }
-        public override void Execute(object parameter)
-        {
-            MainWindowViewModel main = new MainWindowViewModel(_mainWindowVeiwModel.SelectedPerson);
-            main.DeletePerson();
-        }
-    }
-
-    /// <summary>
-    /// Класс для обработки команды получения информации о проекте.
-    /// </summary>
-    class GetAppointmentCommand : MainWindowMyCommand               //Возможно надо вынести в Utility
-    {
-        public GetAppointmentCommand(MainWindowViewModel mainWindowVeiwModel) : base(mainWindowVeiwModel)
-        {
-        }
-        public override bool CanExecute(object parameter)
-        {
-            return true;
-        }
-        public override void Execute(object parameter)
-        {
-            MessageBox.Show("Этот тестовый проект написан с целью технологии WPF и паттерна для работы MVVM для работы с ним ", "Информация", MessageBoxButton.OK);
-        }
-    }
-
-    /// <summary>
-    /// Класс для обработки команды получения информации о разработчике.
-    /// </summary>
-    class GetAuthorCommand : MainWindowMyCommand               //Возможно надо вынести в Utility
-    {
-        public GetAuthorCommand(MainWindowViewModel mainWindowVeiwModel) : base(mainWindowVeiwModel)
-        {
-        }
-        public override bool CanExecute(object parameter)
-        {
-            return true;
-        }
-        public override void Execute(object parameter)
-        {
-            MessageBox.Show("А.В. Печенюк", "Информация", MessageBoxButton.OK);
-        }
-    }
-
-    /// <summary>
-    /// Класс для обработки команды получения информации о разработчике.
-    /// </summary>
-    class ApllyFiltersCommand : MainWindowMyCommand               //Возможно надо вынести в Utility
-    {
-        public ApllyFiltersCommand(MainWindowViewModel mainWindowVeiwModel) : base(mainWindowVeiwModel)
-        {
-        }
-        public override bool CanExecute(object parameter)
-        {
-            return true;
-        }
-        public override void Execute(object parameter)
-        {
-            _mainWindowVeiwModel.GetFilterData();
-        }
-    }
-
-    /// <summary>
-    /// Класс для обработки команды получения информации о разработчике.
-    /// </summary>
-    class ResetFiltersCommand : MainWindowMyCommand               //Возможно надо вынести в Utility
-    {
-        public ResetFiltersCommand(MainWindowViewModel mainWindowVeiwModel) : base(mainWindowVeiwModel)
-        {
-        }
-        public override bool CanExecute(object parameter)
-        {
-            return true;
-        }
-        public override void Execute(object parameter)
-        {
-            _mainWindowVeiwModel.GetData();
-        }
-    }
-
-    #endregion
 }
