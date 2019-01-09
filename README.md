@@ -5,3 +5,15 @@
 Основное окно программы:
 
 ![Скриншот 1. основное окно программы](http://ipic.su/img/img7/fs/osnovnoeoknoprogrammy.1547055607.png)
+
+Окно добавления нового сотрудника:
+
+![Скриншот 2. добавление нового](http://ipic.su/img/img7/fs/dobavlenienovogo.1547055755.png)
+
+Окно редактирования существующего сотрудника:
+
+![Скриншот 3. редактирование существующего](http://ipic.su/img/img7/fs/redaktirovaniesushestvuyushego.1547055770.png)
+
+Фильтр:
+
+![Скриншот 4. фильтр](http://ipic.su/img/img7/fs/filtr.1547055795.png)
