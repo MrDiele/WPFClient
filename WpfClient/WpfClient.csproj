@@ -87,13 +87,14 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="DisplayRootRegistry.cs" />
+    <Compile Include="Utility\Logs.cs" />
     <Compile Include="ViewModel\PersonWindowViewModel.cs" />
     <Compile Include="View\PersonWindow.xaml.cs">
       <DependentUpon>PersonWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Utility\ViewModelBase.cs" />
+    <Compile Include="ViewModel\ViewModelBase.cs" />
     <Compile Include="ViewModel\MainWindowViewModel.cs" />
-    <Compile Include="View\RelayCommand.cs" />
+    <Compile Include="Commands\RelayCommand.cs" />
     <Compile Include="WorkWithServer\InteractionServer.cs" />
     <Page Include="Theme\Brushes.xaml">
       <SubType>Designer</SubType>

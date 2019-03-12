@@ -11,8 +11,7 @@ using WpfClient.WorkWithServer;
 namespace WpfClient.ViewModel
 {
     class MainWindowViewModel : ViewModelBase
-    {
-
+    {   
         #region Fields
 
         private string filterName;
@@ -30,6 +29,7 @@ namespace WpfClient.ViewModel
         private ICommand getAppointmentCommand;
         private ICommand getInformationAboutAuthorCommand;
         private ICommand deletePersonCommand;
+        private ICommand exitFromApp;
 
         #endregion
 
@@ -236,6 +236,17 @@ namespace WpfClient.ViewModel
             }
         }
 
+        /// <summary>
+        /// Команда закрытия программы.
+        /// </summary>
+        public ICommand ExitFromApp
+        {
+            get
+            {
+                return exitFromApp ?? (exitFromApp = new RelayCommand((o) => { Application.Current.MainWindow.Close(); }));
+            }
+        }
+
         #endregion
 
         #region Method logic
@@ -268,8 +279,7 @@ namespace WpfClient.ViewModel
         {
             this.personCount = this.PersonsList.Count;
         }
-
-
+         
         /// <summary>
         /// Метод для заполнения списка пользователей.
         /// </summary>

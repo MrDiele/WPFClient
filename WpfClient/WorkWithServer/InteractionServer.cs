@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using WebServer.Utils;
 using WpfClient.Model;
 
 namespace WpfClient.WorkWithServer
@@ -28,7 +29,7 @@ namespace WpfClient.WorkWithServer
             }
             catch (Exception ex)
             {
-                //TODO Логи
+                Logs.Add(System.Reflection.MethodBase.GetCurrentMethod().Name, ex.ToString());
                 return null;
             }
         }
@@ -59,7 +60,7 @@ namespace WpfClient.WorkWithServer
             }
             catch (Exception ex)
             {
-                //TODO Логи
+                Logs.Add(System.Reflection.MethodBase.GetCurrentMethod().Name, ex.ToString());
                 return null;
             }
         }
@@ -90,7 +91,7 @@ namespace WpfClient.WorkWithServer
             }
             catch (Exception ex)
             {
-                //TODO Логи
+                Logs.Add(System.Reflection.MethodBase.GetCurrentMethod().Name, ex.ToString());
                 return null;
             }
         }
@@ -122,7 +123,7 @@ namespace WpfClient.WorkWithServer
             }
             catch (Exception ex)
             {
-                //TODO Логи
+                Logs.Add(System.Reflection.MethodBase.GetCurrentMethod().Name, ex.ToString());
             }
         }
 
@@ -153,7 +154,7 @@ namespace WpfClient.WorkWithServer
             }
             catch (Exception ex)
             {
-                //TODO Логи
+                Logs.Add(System.Reflection.MethodBase.GetCurrentMethod().Name, ex.ToString());
             }
         }
 
@@ -173,7 +174,7 @@ namespace WpfClient.WorkWithServer
             }
             catch (Exception ex)
             {
-                //TODO Логи
+                Logs.Add(System.Reflection.MethodBase.GetCurrentMethod().Name, ex.ToString());
             }
         }
 
@@ -219,9 +220,9 @@ namespace WpfClient.WorkWithServer
                 }
             }
             catch (Exception ex)
-            {
+            {                                               
+                Logs.Add(System.Reflection.MethodBase.GetCurrentMethod().Name, ex.ToString());
                 return null;
-                //TODO Логи
             }
         }
     }

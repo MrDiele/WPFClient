@@ -3,7 +3,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:WpfClient.ViewModel"
         mc:Ignorable="d"
         Title="TestProject" Height="450" Width="800">
     <Window.Resources>
@@ -25,7 +24,7 @@
                     <MenuItem Header="Автор" Command="{Binding GetInformationAboutAuthorCommand}"></MenuItem>
                 </MenuItem>
                 <Separator />
-                <MenuItem Header="Выход" Click="MenuItem_Click" ></MenuItem>
+                <MenuItem Header="Выход" Command="{Binding exitFromApp}"></MenuItem>
             </MenuItem>
             <MenuItem Header="Возможные действия">
                 <MenuItem Header="Добавить" Command="{Binding OpenWindowAddPersonCommand}"></MenuItem>
@@ -60,8 +59,7 @@
         <DataGrid x:Name="MainGrid" Grid.Row="3" 
                           ItemsSource="{Binding Source={StaticResource PersonsList}}"
                           SelectedItem="{Binding SelectedPerson}" 
-                          AutoGenerateColumns="False"
-                          DataContextChanged="OnMainGridDataContextChanged"
+                          AutoGenerateColumns="False"                           
                           DockPanel.Dock="Top">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="id" Width="40" Binding="{Binding Idperson}" IsReadOnly="True" />
